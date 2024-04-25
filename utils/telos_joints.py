@@ -1,0 +1,20 @@
+import enum
+
+
+class TelosJoints(enum.Enum):
+    RIGID_FR = 0
+    REVOLUTE_FR_HIP = 1
+    REVOLUTE_FR_THIGH = 2
+    REVOLUTE_FR_KNEE = 3
+    RIGID_FL = 4
+    REVOLUTE_FL_HIP = 5
+    REVOLUTE_FL_THIGH = 6
+    REVOLUTE_FL_KNEE = 7
+    RIGID_BR = 8
+    REVOLUTE_BR_HIP = 9
+    REVOLUTE_BR_THIGH = 10
+    REVOLUTE_BR_KNEE = 11
+    RIGID_BL = 12
+    REVOLUTE_BL_HIP = 13
+    REVOLUTE_BL_THIGH = 14
+    REVOLUTE_BL_KNEE = 15

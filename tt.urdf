@@ -431,7 +431,7 @@
   <origin xyz="0.0 -0.145 -0.0043" rpy="0 0 0"/>
   <parent link="Hip_bare_1_v1_11"/>
   <child link="LegXIVII.base4_bare_1_v11"/>
-  <axis xyz="-0.0 0.0 -1.0"/>
+  <axis xyz="-0.0 0.0 1.0"/>
   <limit>
     <lower>-0.3491</lower>
     <upper>2.2689</upper>
@@ -552,8 +552,8 @@
   <child link="LegXIVII.base4_bare_1_v1Mirror2"/>
   <axis xyz="0.0 -0.0 1.0"/>
   <limit>
-    <lower>-0.3491</lower>
-    <upper>2.2689</upper>
+    <lower>-2.2689</lower>
+    <upper>0.3491</upper>
   </limit>
 </joint>
 <transmission name="Revolute_BL_Knee_tran">
