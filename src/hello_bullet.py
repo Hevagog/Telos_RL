@@ -1,3 +1,4 @@
+import os
 import time
 from utils.telos_joints import TelosJoints
 import pybullet as p
@@ -8,9 +9,12 @@ p.setAdditionalSearchPath(pybullet_data.getDataPath())  # optionally
 p.setGravity(0, 0, -9.8)
 planeId = p.loadURDF("plane.urdf")
 startPos = [0, 0, 1]
-cubeStartOrientation = p.getQuaternionFromEuler([0, 0, 0])
+cubeStartOrientation = p.getQuaternionFromEuler([1.5707963267948966, 0, 0])
+_current_dir = os.path.dirname(os.path.realpath(__file__))
+_urdf_root_path = _current_dir + "/urdf"
+_urdf_robot_path = _urdf_root_path + "/tt.urdf"
 robotId = p.loadURDF(
-    "tt.urdf",
+    _urdf_robot_path,
     startPos,
     cubeStartOrientation,
 )

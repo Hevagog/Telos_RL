@@ -1,5 +1,12 @@
 import enum
 
+THIGH_HIP_ANGLE = -0.7853981633974483
+HIP_ANGLE = 0
+KNEE_ANGLE = -1.48352986
+
+HIP_THIGH_FORCE = 1.5  # in Nm
+KNEE_FORCE = 1.5  # in Nm
+
 
 class TelosJoints(enum.Enum):
     RIGID_FR = 0
