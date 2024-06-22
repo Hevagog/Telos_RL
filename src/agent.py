@@ -118,7 +118,7 @@ class TelosAgent:
             np.zeros(16),
         )
 
-    def get_observation(self):
+    def _get_obs(self):
         """
         Gets the observation for the quadruped robot.
         :return: Observation for the quadruped robot.

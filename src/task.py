@@ -8,7 +8,7 @@ import time
 from agent import TelosAgent
 
 
-class Task:
+class TelosTask:
     def __init__(self, agent: TelosAgent):
         self.agent = agent
         self.goal_radius = 10
@@ -46,7 +46,7 @@ class Task:
 
 if __name__ == "__main__":
     quadruped_agent = TelosAgent(renderer="OpenGL")
-    task = Task(quadruped_agent)
+    task = TelosTask(quadruped_agent)
 
     visual_shape_id = p.createVisualShape(
         shapeType=p.GEOM_CAPSULE,
@@ -62,8 +62,12 @@ if __name__ == "__main__":
     body_id = p.createMultiBody(
         basePosition=[*task.goal], baseVisualShapeIndex=visual_shape_id
     )
-
-    for _ in range(100):
+    # while True:
+    #     # p.stepSimulation()
+    #     # quadruped_agent.step_simulation()
+    #     # print(task.compute_reward(quadruped_agent.get_obs()[0:3], task.goal))
+    #     time.sleep(1.0 / 60.0)
+    for _ in range(4):
         for angle in range(-45, 46):
             angles = np.array([math.radians(angle)] * 16)
             angles = quadruped_agent.default_angles + angles
@@ -83,7 +87,11 @@ if __name__ == "__main__":
 
         # Step simulation
         # Sleep for a short duration to observe the movement
-        quadruped_agent.reset_position()
+        # quadruped_agent.reset_position()
+
         time.sleep(1)
+    task.reset()
+    quadruped_agent.step_simulation()
+    time.sleep(10)
 
     quadruped_agent.disconnect()

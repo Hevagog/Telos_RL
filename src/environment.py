@@ -1,49 +1,66 @@
-import gymnasium as gym
 import numpy as np
 import pybullet as p
-import pybullet_data
-from gymnasium import spaces
+import gymnasium as gym
 
-from utils.telos_joints import TelosJoints
+import utils.telos_joints as tj
 
 
-class CustomEnvironment(gym.Env):
-    def __init__(self):
-        super(CustomEnvironment, self).__init__()
+class TelosTaskEnv(gym.Env):
+    metadata = {"render_modes": ["human", "rgb_array"]}
 
-        # Initialize PyBullet and load URDF files
-        self.physicsClient = p.connect(p.GUI)
-        p.setAdditionalSearchPath(pybullet_data.getDataPath())
-        self.planeId = p.loadURDF("plane.urdf")
-        p.setGravity(0, 0, -9.8)
-
-        # Define action and observation spaces
-        self.action_space = spaces.Box(low=-1, high=1, shape=(2,), dtype=np.float32)
-        self.observation_space = spaces.Box(
-            low=-np.inf, high=np.inf, shape=(8,), dtype=np.float32
+    def __init__(
+        self,
+        task,
+        agent,
+        render_mode: str = "rgb_array",
+    ) -> None:
+        self.task = task
+        self.agent = agent
+        self.observation_space = gym.spaces.Box(
+            low=-np.inf, high=np.inf, shape=(12,), dtype=np.float32
+        )
+        self.low_angles = np.array(
+            [
+                tj.HIP_MIN_ANGLE,
+                tj.THIGH_MIN_ANGLE,
+                tj.KNEE_MIN_ANGLE,
+            ]
+            * 4
+        )
+        self.high_angles = np.array(
+            [
+                tj.HIP_MAX_ANGLE,
+                tj.THIGH_MAX_ANGLE,
+                tj.KNEE_MAX_ANGLE,
+            ]
+            * 4
+        )
+        self.action_space = gym.spaces.Box(
+            low=self.low_angles, high=self.high_angles, shape=(12,), dtype=np.float32
         )
 
-        # Additional initialization
-        self.seed()
-
-    def step(self, action):
-        # Apply action, update simulation, and get new observation
-        # Calculate reward and check if episode is done
-        return observation, reward, done, info
+    def _get_obs(self):
+        return self.agent.get_obs()
 
     def reset(self):
-        # Reset environment to initial state
-        return initial_observation
+        super().reset()
+        self.task.reset()
+        info = {
+            "is_success": self.task.is_success(self._get_obs()[0:3], self.task.goal)
+        }
+        return self._get_obs(), info
 
-    def render(self, mode="human"):
-        # Render the environment
-        pass
+    def step(self, action):
+        self.agent.set_action(action)
+        self.agent.step_simulation()
+        obs = self._get_obs()
+        reward = self.task.compute_reward(obs[0:3], self.task.goal)
+        truncated = False
+        done = bool(self.task.is_success(obs[0:3], self.task.goal))
+        info = {"is_success": done}
+        return obs, reward, done, truncated, info
 
     def close(self):
-        # Clean up resources
-        p.disconnect(self.client)
+        p.disconnect()
 
-    def seed(self, seed=None):
-        # Seed the environment for reproducibility
-        self.np_random, seed = gym.utils.seeding.np_random(seed)
-        return [seed]
+    # def render(self, mode="human"):
