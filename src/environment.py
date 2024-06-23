@@ -2,6 +2,7 @@ import numpy as np
 import pybullet as p
 import gymnasium as gym
 
+from typing import Optional
 import utils.telos_joints as tj
 
 
@@ -17,7 +18,7 @@ class TelosTaskEnv(gym.Env):
         self.task = task
         self.agent = agent
         self.observation_space = gym.spaces.Box(
-            low=-np.inf, high=np.inf, shape=(12,), dtype=np.float32
+            low=-np.inf, high=np.inf, shape=(31,), dtype=np.float32
         )
         self.low_angles = np.array(
             [
@@ -40,10 +41,10 @@ class TelosTaskEnv(gym.Env):
         )
 
     def _get_obs(self):
-        return self.agent.get_obs()
+        return self.agent._get_obs()
 
-    def reset(self):
-        super().reset()
+    def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
+        super().reset(seed=seed, options=options)
         self.task.reset()
         info = {
             "is_success": self.task.is_success(self._get_obs()[0:3], self.task.goal)

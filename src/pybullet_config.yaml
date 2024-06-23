@@ -1,0 +1,11 @@
+pybullet:
+  simulation:
+    gravity: [0, 0, -9.81]
+    time_step: 1/60
+    num_solver_iterations: 5
+    num_substeps: 4
+  robot:
+    urdf_path: "/urdf/tt.urdf"
+    start_position: [0, 0, 0.3]
+    start_orientation: [1.5707963267948966, 0, -3.1415926535897932]
+    

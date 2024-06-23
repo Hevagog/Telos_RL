@@ -14,6 +14,8 @@ KNEE_MIN_ANGLE = -1.5707963268
 HIP_THIGH_FORCE = 1.5  # in Nm
 KNEE_FORCE = 1.5  # in Nm
 
+MOVING_JOINTS = [1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15]
+
 
 class TelosJoints(enum.Enum):
     RIGID_FR = 0

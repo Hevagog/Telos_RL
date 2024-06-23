@@ -1,35 +1,27 @@
-"""
-agent
-"""
-
 import os
 import math
 import time
+import yaml
 import numpy as np
 import pybullet as p
 import pybullet_data
 
-from utils.telos_joints import KNEE_ANGLE, THIGH_HIP_ANGLE, HIP_ANGLE
+from utils.telos_joints import KNEE_ANGLE, THIGH_HIP_ANGLE, HIP_ANGLE, MOVING_JOINTS
 
 
 class TelosAgent:
     def __init__(
         self,
         render_mode: str = "rgb_array",
-        set_gravity: bool = True,
         renderer: str = "Tiny",
     ) -> None:
-        """
-        Initializes the quadruped agent.
-        """
+        with open("pybullet_config.yaml", "r", encoding="utf-8") as file:
+            _config = yaml.safe_load(file)
         _current_dir = os.path.dirname(os.path.realpath(__file__))
-        _urdf_root_path = _current_dir + "/urdf"
-        _urdf_robot_path = _urdf_root_path + "/tt.urdf"
+        _urdf_root_path = _current_dir + _config["pybullet"]["robot"]["urdf_path"]
         self.default_angles = [0, HIP_ANGLE, THIGH_HIP_ANGLE, KNEE_ANGLE] * 4
-        self.rotational_links = [1, 2, 3, 5, 6, 7, 9, 10, 11, 13, 14, 15]
         self.render_mode = render_mode
 
-        # Set the render mode
         if self.render_mode == "human":
             self.connection_mode = p.GUI
         elif self.render_mode == "rgb_array":
@@ -40,23 +32,22 @@ class TelosAgent:
 
         self.physics_client = p.connect(self.connection_mode)
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
-        planeId = p.loadURDF("plane.urdf")
-
+        p.loadURDF("plane.urdf")
         p.setPhysicsEngineParameter(
-            fixedTimeStep=1.0 / 60.0,
-            solverResidualThreshold=1 - 10,
-            numSolverIterations=50,
-            numSubSteps=4,
+            fixedTimeStep=_config["pybullet"]["simulation"]["time_step"],
+            numSolverIterations=_config["pybullet"]["simulation"][
+                "num_solver_iterations"
+            ],
+            numSubSteps=_config["pybullet"]["simulation"]["num_substeps"],
         )
-        if set_gravity:
-            p.setGravity(0, 0, -9.8)
+        p.setGravity(*_config["pybullet"]["simulation"]["gravity"])
 
-        self.start_pos = [0, 0, 0.3]
+        self.start_pos = [*_config["pybullet"]["robot"]["start_position"]]
         self.cube_start_orientation = p.getQuaternionFromEuler(
-            [1.5707963267948966, 0, -1.5707963267948966 * 2]
+            [*_config["pybullet"]["robot"]["start_orientation"]]
         )
         self.agent = p.loadURDF(
-            _urdf_robot_path, self.start_pos, self.cube_start_orientation
+            _urdf_root_path, self.start_pos, self.cube_start_orientation
         )
         self.reset_angles()
 
@@ -112,16 +103,16 @@ class TelosAgent:
         """
         p.setJointMotorControlArray(
             self.agent,
-            range(16),
+            MOVING_JOINTS,
             p.POSITION_CONTROL,
             action,
-            np.zeros(16),
+            np.zeros(len(MOVING_JOINTS)),
         )
 
     def _get_obs(self):
         """
         Gets the observation for the quadruped robot.
-        :return: Observation for the quadruped robot.
+        :return: Observation for the quadruped robot as a list of shape (31,).
         """
         observation = []
         position, orientation = p.getBasePositionAndOrientation(self.agent)
@@ -130,7 +121,7 @@ class TelosAgent:
             *orientation,  # x, y, z, w orientation
         ]
 
-        for joint in self.rotational_links:
+        for joint in MOVING_JOINTS:
             joint_state = p.getJointState(self.agent, joint)
             observation.append(joint_state[0])  # Joint angle
             observation.append(joint_state[1])  # Joint velocity
@@ -149,37 +140,3 @@ class TelosAgent:
         Disconnects from PyBullet.
         """
         p.disconnect(self.physics_client)
-
-
-# Example usage
-if __name__ == "__main__":
-
-    quadruped_agent = TelosAgent(renderer="OpenGL")
-
-    time.sleep(1)
-
-    for _ in range(100):
-        for angle in range(-45, 46):
-            angles = np.array([math.radians(angle)] * 16)
-            angles = quadruped_agent.default_angles + angles
-            indices = [0, 4, 8, 12]
-            angles[indices] = 0
-            quadruped_agent.set_action(angles)
-            quadruped_agent.step_simulation()
-            print(quadruped_agent.get_observation())
-            time.sleep(0.01)
-        for angle in range(45, -46, -1):
-            angles = np.array([math.radians(angle)] * 16)
-            angles = quadruped_agent.default_angles + angles
-            indices = [0, 4, 8, 12]
-            angles[indices] = 0
-            quadruped_agent.set_action(angles)
-            quadruped_agent.step_simulation()
-            time.sleep(0.01)
-
-        # Step simulation
-        # Sleep for a short duration to observe the movement
-        quadruped_agent.reset_position()
-        time.sleep(1)
-
-    quadruped_agent.disconnect()
