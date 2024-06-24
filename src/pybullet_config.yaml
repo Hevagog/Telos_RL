@@ -1,11 +1,17 @@
 pybullet:
   simulation:
     gravity: [0, 0, -9.81]
-    time_step: 1/60
+    time_step: 0.016666666666666666
     num_solver_iterations: 5
     num_substeps: 4
   robot:
     urdf_path: "/urdf/tt.urdf"
     start_position: [0, 0, 0.3]
     start_orientation: [1.5707963267948966, 0, -3.1415926535897932]
-    
+task:
+  goal_radius: 10
+  goal_angle_bounds: [-45, 45]
+  smoothing_factor: 0.2
+  distance_threshold: 0.1
+  fall_threshold: 0.5
+  fall_reward: -100

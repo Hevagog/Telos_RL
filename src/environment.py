@@ -13,7 +13,6 @@ class TelosTaskEnv(gym.Env):
         self,
         task,
         agent,
-        render_mode: str = "rgb_array",
     ) -> None:
         self.task = task
         self.agent = agent
@@ -64,4 +63,5 @@ class TelosTaskEnv(gym.Env):
     def close(self):
         p.disconnect()
 
-    # def render(self, mode="human"):
+    def render(self):
+        pass

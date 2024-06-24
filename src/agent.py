@@ -6,7 +6,13 @@ import numpy as np
 import pybullet as p
 import pybullet_data
 
-from utils.telos_joints import KNEE_ANGLE, THIGH_HIP_ANGLE, HIP_ANGLE, MOVING_JOINTS
+from utils.telos_joints import (
+    KNEE_ANGLE,
+    THIGH_HIP_ANGLE,
+    HIP_ANGLE,
+    MOVING_JOINTS,
+    TelosJoints,
+)
 
 
 class TelosAgent:
@@ -32,7 +38,7 @@ class TelosAgent:
 
         self.physics_client = p.connect(self.connection_mode)
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
-        p.loadURDF("plane.urdf")
+        self.ground_plane = p.loadURDF("plane.urdf")
         p.setPhysicsEngineParameter(
             fixedTimeStep=_config["pybullet"]["simulation"]["time_step"],
             numSolverIterations=_config["pybullet"]["simulation"][
@@ -66,41 +72,7 @@ class TelosAgent:
         )
         self.reset_angles()
 
-    def move_joint(self, leg_id, position, force=1.5):
-        """
-        Moves a specific leg of the quadruped robot.
-        :param leg_id: ID of the leg joint to move.
-        :param position: Target position for the leg.
-        :param force: Force to apply for moving the leg.
-        """
-        p.setJointMotorControlArray(
-            self.agent,
-            [leg_id],
-            p.POSITION_CONTROL,
-            [position],
-            [force],
-        )
-
-    def move_legs(self, joint_ids, positions, forces):
-        """
-        Moves all the legs of the quadruped robot.
-        :param leg_id: ID of the leg joint to move.
-        :param positions: Target positions for the legs.
-        :param forces: Forces to apply for moving the legs.
-        """
-        p.setJointMotorControlArray(
-            self.agent,
-            joint_ids,
-            p.POSITION_CONTROL,
-            positions,
-            forces,
-        )
-
     def set_action(self, action):
-        """
-        Sets the action for the quadruped robot.
-        :param action: Action to set for the quadruped robot.
-        """
         p.setJointMotorControlArray(
             self.agent,
             MOVING_JOINTS,
@@ -128,6 +100,46 @@ class TelosAgent:
             # observation.append(joint_state[2])  # Joint reaction forces For now no torque sensor!
 
         return observation
+
+    def get_joint_acceleration(self, joint_id):
+        """
+        Gets the joint acceleration for the specified joint.
+        :param joint_id: ID of the joint.
+        :return: Joint acceleration.
+        """
+        return p.getJointState(self.agent, joint_id)[3]
+
+    def get_acceleration_from_rotary(self):
+        """
+        Gets the acceleration from rotary joints.
+        :return: Acceleration from rotary joints.
+        """
+        acceleration = []
+        for joint in MOVING_JOINTS:
+            acceleration.append(self.get_joint_acceleration(joint))
+        return acceleration
+
+    def get_center_of_mass(self):
+        """
+        Gets the center of mass of the agent.
+        :return: Center of mass of the agent.
+        """
+        return p.getBasePositionAndOrientation(self.agent)[0]
+
+    def get_contact_points_with_ground(self):
+        """
+        Gets the contact points of the agent with the ground.
+        :return: Contact points of the agent with the ground.
+        """
+        contact_points = p.getContactPoints(self.agent, self.ground_plane)
+        euc_contact_points = []
+        for contact_point in contact_points:
+            euc_contact_points.append(contact_point[5])
+        if not euc_contact_points:
+            return False, None
+        euc_contact_points = np.array(euc_contact_points)
+        euc_contact_points[:, 2] = 0
+        return True, euc_contact_points
 
     def step_simulation(self):
         """
