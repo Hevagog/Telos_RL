@@ -13,10 +13,10 @@ class TelosTask:
         self.agent = agent
         self.goal_radius = _config["task"]["goal_radius"]
         self.fall_reward = _config["task"]["fall_reward"]
-        self.dist_threshold = _config["task"]["dist_threshold"]
+        self.dist_threshold = _config["task"]["distance_threshold"]
         self.fall_threshold = _config["task"]["fall_threshold"]
         self.smoothing_factor = _config["task"]["smoothing_factor"]
-        self.angle_bounds = np.deg2rad([*_config["task"]["angle_bounds"]])
+        self.angle_bounds = np.deg2rad([*_config["task"]["goal_angle_bounds"]])
         theta = np.random.uniform(*self.angle_bounds)
         self.goal = np.array(
             [self.goal_radius * np.cos(theta), self.goal_radius * np.sin(theta), 0]
@@ -27,7 +27,6 @@ class TelosTask:
         self.goal = np.array(
             [self.goal_radius * np.cos(theta), self.goal_radius * np.sin(theta), 0]
         )
-        self.agent.reset_position()
 
     def get_obs(self):
         return self.agent.get_obs()

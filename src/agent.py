@@ -25,6 +25,7 @@ class TelosAgent:
             _config = yaml.safe_load(file)
         _current_dir = os.path.dirname(os.path.realpath(__file__))
         _urdf_root_path = _current_dir + _config["pybullet"]["robot"]["urdf_path"]
+        self.n_substeps = _config["pybullet"]["simulation"]["num_substeps"]
         self.default_angles = [0, HIP_ANGLE, THIGH_HIP_ANGLE, KNEE_ANGLE] * 4
         self.render_mode = render_mode
 
@@ -66,7 +67,7 @@ class TelosAgent:
                 default_angles.pop(0),
             )
 
-    def reset_position(self):
+    def reset(self):
         p.resetBasePositionAndOrientation(
             self.agent, self.start_pos, self.cube_start_orientation
         )
@@ -145,7 +146,8 @@ class TelosAgent:
         """
         Steps the simulation forward by one time step.
         """
-        p.stepSimulation()
+        for _ in range(self.n_substeps):
+            p.stepSimulation()
 
     def disconnect(self):
         """

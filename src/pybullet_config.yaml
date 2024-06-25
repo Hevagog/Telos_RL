@@ -9,7 +9,7 @@ pybullet:
     start_position: [0, 0, 0.3]
     start_orientation: [1.5707963267948966, 0, -3.1415926535897932]
 task:
-  goal_radius: 10
+  goal_radius: 5
   goal_angle_bounds: [-45, 45]
   smoothing_factor: 0.2
   distance_threshold: 0.1

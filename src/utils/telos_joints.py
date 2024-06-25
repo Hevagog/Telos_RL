@@ -1,4 +1,5 @@
 import enum
+import numpy as np
 
 THIGH_HIP_ANGLE = -0.7853981633974483
 HIP_ANGLE = 0
@@ -34,3 +35,21 @@ class TelosJoints(enum.Enum):
     REVOLUTE_BL_HIP = 13
     REVOLUTE_BL_THIGH = 14
     REVOLUTE_BL_KNEE = 15
+
+
+low_angles = np.array(
+    [
+        HIP_MIN_ANGLE,
+        THIGH_MIN_ANGLE,
+        KNEE_MIN_ANGLE,
+    ]
+    * 4
+)
+high_angles = np.array(
+    [
+        HIP_MAX_ANGLE,
+        THIGH_MAX_ANGLE,
+        KNEE_MAX_ANGLE,
+    ]
+    * 4
+)
