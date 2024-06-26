@@ -1,18 +1,13 @@
 import os
-import math
-import time
-import yaml
 import numpy as np
 import pybullet as p
 import pybullet_data
 
 from utils.telos_joints import (
-    KNEE_ANGLE,
-    THIGH_HIP_ANGLE,
-    HIP_ANGLE,
+    DEFAULT_ANGLES,
     MOVING_JOINTS,
-    TelosJoints,
 )
+from utils.helper import load_yaml
 
 
 class TelosAgent:
@@ -21,12 +16,11 @@ class TelosAgent:
         render_mode: str = "rgb_array",
         renderer: str = "Tiny",
     ) -> None:
-        with open("pybullet_config.yaml", "r", encoding="utf-8") as file:
-            _config = yaml.safe_load(file)
+        _config = load_yaml("pybullet_config.yaml")
         _current_dir = os.path.dirname(os.path.realpath(__file__))
         _urdf_root_path = _current_dir + _config["pybullet"]["robot"]["urdf_path"]
         self.n_substeps = _config["pybullet"]["simulation"]["num_substeps"]
-        self.default_angles = [0, HIP_ANGLE, THIGH_HIP_ANGLE, KNEE_ANGLE] * 4
+        self.default_angles = DEFAULT_ANGLES
         self.render_mode = render_mode
 
         if self.render_mode == "human":
@@ -56,6 +50,7 @@ class TelosAgent:
         self.agent = p.loadURDF(
             _urdf_root_path, self.start_pos, self.cube_start_orientation
         )
+
         self.reset_angles()
 
     def reset_angles(self):
@@ -79,10 +74,10 @@ class TelosAgent:
             MOVING_JOINTS,
             p.POSITION_CONTROL,
             action,
-            np.zeros(len(MOVING_JOINTS)),
+            np.zeros(12),  # No velocity control
         )
 
-    def _get_obs(self):
+    def get_obs(self):
         """
         Gets the observation for the quadruped robot.
         :return: Observation for the quadruped robot as a list of shape (31,).
@@ -115,9 +110,7 @@ class TelosAgent:
         Gets the acceleration from rotary joints.
         :return: Acceleration from rotary joints.
         """
-        acceleration = []
-        for joint in MOVING_JOINTS:
-            acceleration.append(self.get_joint_acceleration(joint))
+        acceleration = [self.get_joint_acceleration(joint) for joint in MOVING_JOINTS]
         return acceleration
 
     def get_center_of_mass(self):

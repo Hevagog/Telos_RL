@@ -37,7 +37,7 @@ class TelosTaskEnv(gym.Env):
         self.render_mode = render_mode
 
     def _get_obs(self):
-        return {"agent": self.agent._get_obs(), "target": self.task.goal}
+        return {"agent": self.agent.get_obs(), "target": self.task.goal}
 
     def _get_info(self):
         agent_pos = self._get_obs()["agent"][0:3]
@@ -59,12 +59,11 @@ class TelosTaskEnv(gym.Env):
         self.agent.set_action(action)
         self.agent.step_simulation()
         obs = self._get_obs()
-        agent_location = obs["agent"][0:3]
-        reward = self.task.compute_reward(agent_location, self.task.goal)
-        truncated = False
-        done = bool(self.task.is_success(agent_location, self.task.goal))
+        reward = self.task.compute_reward(obs["agent"][0:3], self.task.goal)
+        done = self.task.is_success(obs["agent"][0:3], self.task.goal)
+        done = done or self.task.is_terminated()
         info = self._get_info()
-        return obs, reward, done, truncated, info
+        return obs, reward, done, False, info
 
     def close(self):
         p.disconnect()

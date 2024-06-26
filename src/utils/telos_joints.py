@@ -37,6 +37,8 @@ class TelosJoints(enum.Enum):
     REVOLUTE_BL_KNEE = 15
 
 
+DEFAULT_ANGLES = [0, HIP_ANGLE, THIGH_HIP_ANGLE, KNEE_ANGLE] * 4
+
 low_angles = np.array(
     [
         HIP_MIN_ANGLE,

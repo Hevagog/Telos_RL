@@ -1,15 +1,13 @@
-import numpy as np
-import pybullet as p
-import pybullet_data
-import yaml
 import math
 import time
+import numpy as np
+
+from utils.helper import load_yaml
 
 
 class TelosTask:
     def __init__(self, agent):
-        with open("pybullet_config.yaml", "r", encoding="utf-8") as file:
-            _config = yaml.safe_load(file)
+        _config = load_yaml("pybullet_config.yaml")
         self.agent = agent
         self.goal_radius = _config["task"]["goal_radius"]
         self.fall_reward = _config["task"]["fall_reward"]
@@ -34,9 +32,12 @@ class TelosTask:
     def get_achieved_goal(self):
         return self.agent.get_obs()
 
-    def is_success(self, achieved_goal, desired_goal, info={}):
+    def is_success(self, achieved_goal, desired_goal, info={}) -> bool:
         distance = np.linalg.norm(achieved_goal - desired_goal)
         return np.array(distance < self.dist_threshold, dtype=bool)
+
+    def is_terminated(self) -> bool:
+        return self.agent.get_obs()[2] < self.fall_threshold
 
     def compute_reward(self, achieved_goal, desired_goal, info={}):
         healthy_reward = (
