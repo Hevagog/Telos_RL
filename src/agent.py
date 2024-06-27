@@ -1,4 +1,5 @@
 import os
+import importlib
 import numpy as np
 import pybullet as p
 import pybullet_data
@@ -96,6 +97,40 @@ class TelosAgent:
             # observation.append(joint_state[2])  # Joint reaction forces For now no torque sensor!
 
         return observation
+
+    def get_body_velocity(self):
+        """
+        Gets the body acceleration of the agent.
+        :return: Body acceleration of the agent.
+        """
+        return p.getBaseVelocity(self.agent)[1]
+
+    def get_pitch_angle(self):
+        """
+        Gets the pitch angle of the agent.
+        :return: Pitch angle of the agent.
+        """
+        return p.getEulerFromQuaternion(p.getBasePositionAndOrientation(self.agent)[1])[
+            1
+        ]
+
+    def get_roll_angle(self):
+        """
+        Gets the roll angle of the agent.
+        :return: Roll angle of the agent.
+        """
+        return p.getEulerFromQuaternion(p.getBasePositionAndOrientation(self.agent)[1])[
+            0
+        ]
+
+    def get_yaw_angle(self):
+        """
+        Gets the yaw angle of the agent.
+        :return: Yaw angle of the agent.
+        """
+        return p.getEulerFromQuaternion(p.getBasePositionAndOrientation(self.agent)[1])[
+            2
+        ]
 
     def get_joint_acceleration(self, joint_id):
         """

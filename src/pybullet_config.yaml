@@ -15,3 +15,6 @@ task:
   distance_threshold: 0.1
   fall_threshold: 0.5
   fall_reward: -100
+  forward_velocity_bias: 0.8
+  pitch_bias: 20
+  max_angle_dip: 10
