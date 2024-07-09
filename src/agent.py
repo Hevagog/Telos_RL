@@ -81,7 +81,7 @@ class TelosAgent:
     def get_obs(self):
         """
         Gets the observation for the quadruped robot.
-        :return: Observation for the quadruped robot as a list of shape (31,).
+        :return: Observation for the quadruped robot as a list of shape (34,).
         """
         observation = []
         position, orientation = p.getBasePositionAndOrientation(self.agent)
@@ -95,6 +95,10 @@ class TelosAgent:
             observation.append(joint_state[0])  # Joint angle
             observation.append(joint_state[1])  # Joint velocity
             # observation.append(joint_state[2])  # Joint reaction forces For now no torque sensor!
+
+        base_velocity = p.getBaseVelocity(self.agent)[0]
+        for vel in base_velocity:
+            observation.append(vel)
 
         return observation
 

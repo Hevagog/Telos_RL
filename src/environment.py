@@ -17,13 +17,20 @@ class TelosTaskEnv(gym.Env):
     ) -> None:
         self.task = task
         self.agent = agent
+        observation, _ = self.reset()
         self.observation_space = gym.spaces.Dict(
             {
                 "agent": gym.spaces.Box(
-                    low=-np.inf, high=np.inf, shape=(31,), dtype=np.float32
+                    low=-np.inf,
+                    high=np.inf,
+                    shape=(len(observation["agent"]),),
+                    dtype=np.float32,
                 ),
                 "target": gym.spaces.Box(
-                    low=-np.inf, high=np.inf, shape=(3,), dtype=np.float32
+                    low=-np.inf,
+                    high=np.inf,
+                    shape=(len(observation["target"]),),
+                    dtype=np.float32,
                 ),
             }
         )
@@ -32,7 +39,6 @@ class TelosTaskEnv(gym.Env):
         self.action_space = gym.spaces.Box(
             low=self.low_angles, high=self.high_angles, shape=(12,), dtype=np.float32
         )
-        observation, _ = self.reset()
         assert render_mode in self.metadata["render_modes"]
         self.render_mode = render_mode
 
