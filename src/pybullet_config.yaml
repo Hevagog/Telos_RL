@@ -18,3 +18,15 @@ task:
   forward_velocity_bias: 0.8
   pitch_bias: 20
   max_angle_dip: 10
+stability_policy:
+  Kp: 1.0
+  Kd: 0.01
+stability_metric:
+  z_position_emphasis: 10.0
+  pitch_emphasis: 10.0
+target_policy:
+  Kp: 1.0
+  Kd: 0.01
+target_metric:
+  force_x_emphasis: 10.0  
+  force_y_emphasis: 10.0
