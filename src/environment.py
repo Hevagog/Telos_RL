@@ -1,22 +1,16 @@
 import numpy as np
-import pybullet as p
 import gymnasium as gym
 
 from typing import Optional
 import utils.telos_joints as tj
+from utils.PyBullet import PyBullet
 
 
 class TelosTaskEnv(gym.Env):
-    metadata = {"render_modes": ["human", "rgb_array"]}
-
-    def __init__(
-        self,
-        task,
-        agent,
-        render_mode="rgb_array",
-    ) -> None:
+    def __init__(self, task, agent, sim: PyBullet) -> None:
         self.task = task
         self.agent = agent
+        self.sim = sim
         observation, _ = self.reset()
         self.observation_space = gym.spaces.Dict(
             {
@@ -39,8 +33,6 @@ class TelosTaskEnv(gym.Env):
         self.action_space = gym.spaces.Box(
             low=self.low_angles, high=self.high_angles, shape=(12,), dtype=np.float32
         )
-        assert render_mode in self.metadata["render_modes"]
-        self.render_mode = render_mode
 
     def _get_obs(self):
         return {"agent": self.agent.get_obs(), "target": self.task.goal}
@@ -72,11 +64,11 @@ class TelosTaskEnv(gym.Env):
         return obs, reward, done, False, info
 
     def close(self):
-        p.disconnect()
+        self.sim.close()
 
     def render(self):
         return
 
 
-def make_env(task, agent, render_mode="rgb_array"):
-    return TelosTaskEnv(task, agent, render_mode=render_mode)
+def make_env(task, agent, sim):
+    return TelosTaskEnv(task, agent, sim)
