@@ -1,5 +1,6 @@
 import numpy as np
 import gymnasium as gym
+from typing import Tuple
 
 from typing import Optional
 import utils.telos_joints as tj
@@ -7,10 +8,10 @@ from utils.PyBullet import PyBullet
 
 
 class TelosTaskEnv(gym.Env):
-    def __init__(self, task, agent, sim: PyBullet) -> None:
+    def __init__(self, task, agent, sim_engine: PyBullet) -> None:
         self.task = task
         self.agent = agent
-        self.sim = sim
+        self.sim = sim_engine
         observation, _ = self.reset()
         self.observation_space = gym.spaces.Dict(
             {
@@ -53,9 +54,9 @@ class TelosTaskEnv(gym.Env):
         info = self._get_info()
         return observation, info
 
-    def step(self, action):
+    def step(self, action) -> Tuple[np.ndarray, float, bool, bool, dict]:
         self.agent.set_action(action)
-        self.agent.step_simulation()
+        self.sim.step_simulation()
         obs = self._get_obs()
         reward = self.task.compute_reward(obs["agent"][0:3], self.task.goal)
         done = self.task.is_success(obs["agent"][0:3], self.task.goal)

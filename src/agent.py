@@ -27,7 +27,7 @@ class TelosAgent:
 
         self.start_pos = [*_config["pybullet"]["robot"]["start_position"]]
         self.sim.load_plane()
-        self.agent = self.sim.load_agent(
+        self.robot_agent = self.sim.load_agent(
             _urdf_root_path, self.start_pos, self.cube_start_orientation, False
         )
 
@@ -37,17 +37,19 @@ class TelosAgent:
         default_angles = self.default_angles.copy()
         for joint in range(16):
             self.sim.reset_joint_state(
-                self.agent,
+                self.robot_agent,
                 joint,
                 default_angles.pop(0),
             )
 
     def reset(self):
-        self.sim.reset_base_pos(self.agent, self.start_pos, self.cube_start_orientation)
+        self.sim.reset_base_pos(
+            self.robot_agent, self.start_pos, self.cube_start_orientation
+        )
         self.reset_angles()
 
     def set_action(self, action):
-        self.sim.control_joints(self.agent, MOVING_JOINTS, action, np.zeros(12))
+        self.sim.control_joints(self.robot_agent, MOVING_JOINTS, action, np.zeros(12))
 
     def get_obs(self):
         """
@@ -55,15 +57,16 @@ class TelosAgent:
         :return: Observation for the quadruped robot as a list of shape (34,).
         """
         observation = []
-        position, orientation = self.sim.get_all_info_from_agent(self.agent)
+        position, orientation = self.sim.get_all_info_from_agent(self.robot_agent)
         observation.extend(position)  # x, y, z coordinates
         observation.extend(orientation)  # x, y, z, w orientation
 
         for joint in MOVING_JOINTS:
-            joint_state = self.sim.get_joint_state(self.agent, joint)
+            joint_state = self.sim.get_joint_state(self.robot_agent, joint)
             observation.extend(joint_state[:2])  # Joint angle and velocity
 
-        base_velocity = self.sim.get_body_velocity(self.agent, type=0)
-        observation.append(base_velocity)
+        base_velocity = self.sim.get_body_velocity(self.robot_agent, type=0)
+        for vel in base_velocity:
+            observation.append(vel)
 
-        return observation
+        return np.array(observation, dtype=np.float32)

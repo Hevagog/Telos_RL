@@ -47,7 +47,7 @@ class PyBullet:
         :param type: type of velocity. 0 for linear, 1 for angular.
         :return: Body acceleration of the agent.
         """
-        return p.getBaseVelocity(agent)[1][type]
+        return p.getBaseVelocity(agent)[type]
 
     def get_pitch_angle(self, agent):
         """
