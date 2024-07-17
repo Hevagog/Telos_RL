@@ -26,7 +26,6 @@ class TelosAgent:
         )
 
         self.start_pos = [*_config["pybullet"]["robot"]["start_position"]]
-        self.sim.load_plane()
         self.robot_agent = self.sim.load_agent(
             _urdf_root_path, self.start_pos, self.cube_start_orientation, False
         )

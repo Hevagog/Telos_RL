@@ -6,8 +6,9 @@ pybullet:
     num_substeps: 4
   robot:
     urdf_path: "/urdf/tt.urdf"
-    start_position: [0, 0, 0.3]
+    start_position: [0, 0, 0.35]
     start_orientation: [1.5707963267948966, 0, -3.1415926535897932]
+    power: 16 #Watt 
 task:
   goal_radius: 5
   goal_angle_bounds: [-45, 45]
@@ -18,6 +19,11 @@ task:
   forward_velocity_bias: 0.8
   pitch_bias: 20
   max_angle_dip: 10
+standing_task:
+  time_emphasis: 10
+  time_threshold: 10.0
+  plane_angle_bounds: 15 # +/- 5 degrees
+  max_angle_dip: 25
 stability_policy:
   Kp: 1.0
   Kd: 0.01
