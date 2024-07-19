@@ -15,7 +15,6 @@ def get_stability_task_map_from_obs(observation: dict) -> list:
     # Stability task state: [z_position, pitch, joint_velocities]
     z_position = position[2]
     task_state = np.concatenate(([z_position, pitch], joint_velocities))
-    # task_state = np.array([z_position, pitch, *joint_velocities])
 
     return task_state
 

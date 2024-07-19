@@ -6,6 +6,7 @@ def target_policy(task_state, Kp, Kd, policy_shape=0):
     goal_position = task_state[4:6]  # [x, y]
     velocity = task_state[2:4]  # [vx, vy]
     position_deviation = agent_position - goal_position
+
     # Simple PD control for x and y position
     force = -Kp * position_deviation - Kd * velocity
     if policy_shape == 0:

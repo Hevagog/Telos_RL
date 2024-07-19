@@ -1,8 +1,7 @@
 import numpy as np
 import gymnasium as gym
-from typing import Tuple
 
-from typing import Optional
+from typing import Optional, Tuple
 import utils.telos_joints as tj
 from utils.PyBullet import PyBullet
 
