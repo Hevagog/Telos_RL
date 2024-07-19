@@ -3,7 +3,6 @@ import pybullet as p
 import pybullet_data
 
 from .telos_joints import (
-    DEFAULT_ANGLES,
     MOVING_JOINTS,
 )
 from .helper import load_yaml
@@ -151,10 +150,10 @@ class PyBullet:
         """
         p.disconnect(self.physics_client)
 
-    def get_contact_points_with_ground(self, agent, ground_plane):
+    def get_contact_points_with_ground(self, agent, ground_plane, zero_z=True):
         """
         Gets the contact points of the agent with the ground.
-        :return: Contact points of the agent with the ground.
+        :return: Boolean info and contact points of the agent with the ground.
         """
         contact_points = p.getContactPoints(agent, ground_plane)
         euc_contact_points = []
@@ -163,7 +162,8 @@ class PyBullet:
         if not euc_contact_points:
             return False, None
         euc_contact_points = np.array(euc_contact_points)
-        euc_contact_points[:, 2] = 0
+        if zero_z:
+            euc_contact_points[:, 2] = 0
         return True, euc_contact_points
 
     def load_plane(self, plane_path: str = "plane.urdf"):
@@ -207,3 +207,30 @@ class PyBullet:
         Closes the PyBullet environment.
         """
         p.disconnect()
+
+    def draw_debug_plane(self, height):
+        plane_visual_shape_id = p.createVisualShape(
+            shapeType=p.GEOM_BOX,
+            halfExtents=[5, 5, 0.001],  # Large plane with a very small height
+            rgbaColor=[1, 0, 0, 0.5],  # Set the color to red with some transparency
+        )
+        plane_position = [0, 0, 0.15]
+
+        # Create the plane without collision
+        p.createMultiBody(
+            baseVisualShapeIndex=plane_visual_shape_id,
+            baseCollisionShapeIndex=-1,  # No collision shape
+            basePosition=plane_position,
+        )
+
+    def draw_debug_sphere(self, sphere_position):
+        sphere_radius = 0.05
+        sphere_visual_shape_id = p.createVisualShape(
+            shapeType=p.GEOM_SPHERE, radius=sphere_radius, rgbaColor=[0, 1, 0, 1]
+        )
+
+        p.createMultiBody(
+            baseVisualShapeIndex=sphere_visual_shape_id,
+            baseCollisionShapeIndex=-1,  # No collision shape
+            basePosition=sphere_position,
+        )

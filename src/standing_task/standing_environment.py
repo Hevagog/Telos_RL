@@ -10,15 +10,19 @@ from utils.PyBullet import PyBullet
 
 
 class StandingTelosTaskEnv(gym.Env):
-    def __init__(self, task, agent, sim_engine: PyBullet) -> None:
+    def __init__(
+        self, task, agent, sim_engine: PyBullet, rotating_plane: bool = False
+    ) -> None:
         _config = load_yaml("pybullet_config.yaml")
         self.task = task
         self.agent = agent
         self.sim = sim_engine
         self.plane = self.sim.load_plane()
-        self.plane_angle_bounds = math.radians(
-            _config["standing_task"]["plane_angle_bounds"]
-        )
+        self.rotating_plane = rotating_plane
+        if self.rotating_plane:
+            self.plane_angle_bounds = math.radians(
+                _config["standing_task"]["plane_angle_bounds"]
+            )
         observation, _ = self.reset()
         self.observation_space = gym.spaces.Dict(
             {
@@ -40,21 +44,23 @@ class StandingTelosTaskEnv(gym.Env):
         theta = np.random.uniform(
             low=-self.plane_angle_bounds, high=self.plane_angle_bounds
         )
-        self.orientation = self.sim.get_quaternion_from_euler([theta, 0, 0])
-        self.sim.reset_base_pos(self.plane, [0, 0, 0], self.orientation)
+        orientation = self.sim.get_quaternion_from_euler([theta, theta, 0])
+        self.sim.reset_base_pos(self.plane, [0, 0, 0], orientation)
 
     def _get_obs(self):
         return {"agent": self.agent.get_obs()}
 
     def _get_info(self):
         agent_pos = self._get_obs()["agent"][0:3]
-        return agent_pos
+        goal_pos = self.task.goal
+        return {"agent_position": agent_pos, "goal_position": goal_pos}
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed, options=options)
         self.task.reset()
         self.agent.reset()
-        self.reset_plane()
+        if self.rotating_plane:
+            self.reset_plane()
         observation = self._get_obs()
         info = self._get_info()
         return observation, info
@@ -71,9 +77,22 @@ class StandingTelosTaskEnv(gym.Env):
     def close(self):
         self.sim.close()
 
+    def wait_for_contact(self):
+        contact, contact_points = None, None
+        while True:
+            contact, contact_points = self.sim.get_contact_points_with_ground(
+                self.agent.robot_agent, self.plane, zero_z=False
+            )
+            if contact and contact_points.shape[0] >= 4:
+                for contact_point in contact_points:
+                    self.sim.draw_debug_sphere(contact_point)
+
+                break
+            self.sim.step_simulation()
+
     def render(self):
         return
 
 
-def make_env(task, agent, sim):
+def make_standing_env(task, agent, sim):
     return StandingTelosTaskEnv(task, agent, sim)

@@ -13,14 +13,18 @@ class StandingTelosTask:
         self.pitch_bias = _config["task"]["pitch_bias"]
         self.fall_reward = _config["task"]["fall_reward"]
         self.fall_threshold = _config["task"]["fall_threshold"]
-        self.dist_threshold = _config["task"]["distance_threshold"]
         self.smoothing_factor = _config["task"]["smoothing_factor"]
         self.max_angle_dip = _config["standing_task"]["max_angle_dip"]
         self.time_emphasis = _config["standing_task"]["time_emphasis"]
-        self.angle_bounds = np.deg2rad([*_config["task"]["goal_angle_bounds"]])
         self.time_threshold = _config["standing_task"]["time_threshold"]
+        self.dist_threshold = _config["standing_task"]["distance_threshold"]
+        self.angle_bounds = np.deg2rad([*_config["task"]["goal_angle_bounds"]])
+        self.good_position_reward = _config["standing_task"]["good_position_reward"]
         self.agent_start_pos = np.array(
             [*_config["pybullet"]["robot"]["start_orientation"]]
+        )
+        self.goal = np.array(
+            [*_config["standing_task"]["desired_position"]], dtype=np.float32
         )
         self.start_time = time.time()
 
@@ -60,9 +64,12 @@ class StandingTelosTask:
             self.sim.get_pitch_angle(self.agent.robot_agent), 2
         )
         time_reward = self.time_emphasis * self.get_episode_time()
-        distance_reward = -np.linalg.norm(
-            self.agent.get_obs()[:3] - self.agent_start_pos
+        distance_reward = (
+            self.good_position_reward
+            if np.linalg.norm(achieved_goal - self.goal) < self.dist_threshold
+            else -np.linalg.norm(achieved_goal - self.goal) * self.good_position_reward
         )
+
         return (
             healthy_reward
             + smoothing_reward
