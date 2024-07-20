@@ -63,7 +63,7 @@ class TelosTask:
             * self.forward_velocity_bias
         )
         smoothing_reward = -self.smoothing_factor * np.sum(
-            self.sim.get_acceleration_from_rotary(self.agent.robot_agent)
+            self.sim.get_velocity_from_rotary(self.agent.robot_agent)
         )
         pitch_reward = -self.pitch_bias * math.pow(
             self.sim.get_pitch_angle(self.agent.robot_agent), 2

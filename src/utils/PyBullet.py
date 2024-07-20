@@ -80,24 +80,23 @@ class PyBullet:
         """
         return p.getJointState(agent, joint_id)
 
-    def get_joint_acceleration(self, agent, joint_id) -> float:
+    def get_joint_velocity(self, agent, joint_id) -> float:
         """
-        Gets the joint acceleration for the specified joint.
+        Gets the joint velocity for the specified joint.
         :param joint_id: ID of the joint.
-        :return: Joint acceleration.
+        :return: Joint velocity.
         """
         return p.getJointState(agent, joint_id)[3]
 
-    def get_acceleration_from_rotary(self, agent) -> List[float]:
+    def get_velocity_from_rotary(self, agent) -> List[float]:
         """
-        Gets the acceleration from rotary joints.
-        :return: Acceleration from rotary joints.
+        Gets the velocity from rotary joints.
+        :return: velocity from rotary joints.
         """
-        acceleration = [
-            self.get_joint_acceleration(agent, joint_id=joint)
-            for joint in MOVING_JOINTS
+        velocity = [
+            self.get_joint_velocity(agent, joint_id=joint) for joint in MOVING_JOINTS
         ]
-        return acceleration
+        return velocity
 
     def get_all_info_from_agent(self, agent) -> Tuple[List[float], List[float]]:
         return p.getBasePositionAndOrientation(agent)
